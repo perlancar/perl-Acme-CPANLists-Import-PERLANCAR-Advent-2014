@@ -1,0 +1,303 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" id="sixapart-standard">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title>Day 24: Games! | perlancar [blogs.perl.org]</title>
+    <meta name="generator" content="Movable Type Pro 4.38" />
+    
+
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
+    <link href="http://blogs.perl.org/users/perlancar/styles/reset.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/users/perlancar/styles/base.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.css" rel="stylesheet" type="text/css" />
+    <link rel="alternate" type="application/atom+xml" title="Entries" href="http://blogs.perl.org/users/perlancar/atom.xml" />
+
+    <link rel="start" href="http://blogs.perl.org/users/perlancar/" title="Home" />
+    <script type="text/javascript" src="http://blogs.perl.org/users/perlancar/mt.js"></script>
+    <script type="text/javascript" src="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.js"></script>
+    <script type="text/javascript">mtAttachEvent('load', prettyPrint);</script>
+    
+    
+
+
+    
+    <link rel="prev bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-23-appchart-and-textchart.html" title="Day 23: App::chart and Text::chart" />
+    
+    
+    
+
+</head>
+<body class="">
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56332-48']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    <div id="container">
+    <div id="container-inner" class="pkg">
+        <div id="global-nav">
+        <div id="global-nav-inner">
+            <div id="global-nav-search">
+                <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    <input type="hidden" name="limit" value="20" />
+                    <label for="search">Search</label>
+                    <input id="global-search" class="query" name="search" value="Search blogs.perl.org" onfocus="cleanGlobalSearch();" />
+                    <input class="submit" type="submit" value="Go" />
+                </form>
+            </div><!-- #global-nav-search -->
+
+            <ul id="global-nav-links">
+                <li><a href="/">blogs.perl.org</a></li>
+                <li><a href="http://www.perl.org/">perl.org</a></li>
+                <li><a href="http://perlnews.org/">perlnews.org</a></li>
+                <li><a href="http://www.pm.org/">pm.org</a></li>
+		<li id="navbar-signin-widget">
+<span id="navbar-signin-widget-content" class="widget-content"></span>
+</li>
+<script type="text/javascript">
+/* <![CDATA[ */
+mtAttachEvent('usersignin', mtUpdateNavbarSignInWidget);
+mtUpdateNavbarSignInWidget();
+/* ]]> */
+</script>
+            </ul><!-- #global-nav-links -->
+        </div><!-- #global-nav-inner -->
+        </div><!-- #global-nav -->
+        
+
+
+        
+        <div id="header" class="pkg">
+        <div id="header-inner">
+            <h1 id="site-title"><a href="http://blogs.perl.org/users/perlancar/" accesskey="1">perlancar</a></h1>
+            <div id="site-description">A blog about the Perl programming language</div>
+        </div><!-- #header-inner -->
+        </div><!-- #header -->
+        
+        <div id="content">
+        <div id="content-inner" class="pkg">
+            <div id="content-main">
+            
+
+
+<div class="entry" id="entry-6591">
+                        <h2 class="entry-title">Day 24: Games!</h2>
+                        
+                        <div class="entry-meta-1 pkg">
+                            <span class="byline">By <a href="http://blogs.perl.org/users/perlancar/" class="profile-link">perlancar</a></span>
+							<span class="dateline">on <span class="date" title="iso8601">December 24, 2014 12:00 AM</span></span>
+							
+						</div><!-- .entry-meta -->
+                        
+                        <div class="entry-body">
+                            <p><b>About the series</b>: perlancar's 2014 Advent Calendar: Introduction to a selection of 24 modules which I published in 2014. <a href="http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html">Table of contents</a>.</p>
+
+<p>I'll close this series by mentioning that in August I created a few simple text-based games: <a href="https://metacpan.org/pod/Games::WordGuess">Games::WordGuess</a>, <a href="https://metacpan.org/pod/Games::Hangman">Games::Hangman</a>, <a href="https://metacpan.org/pod/Games::ArrangeNumber">Games::ArrangeNumber</a>. The reason I did this originally was because I got sick of playing word guess/hangman on Android with English words, and there doesn't seem to be any support for Indonesian version. So I found out about Games::Word::Wordlist::* modules on CPAN, uploaded a couple of Indonesian wordlists, and had to write a couple of games for using the wordlists too, since there happened to be no text-based hangman game or word guessing either on CPAN at that time).</p>
+
+<p>I've always sucked at interface/interactive things though, so I welcome any patches/pull requests for improving the gameplay. I've got a couple more ideas for simple games, but lost interest after a few days, so those ideas will still remain in the backburner for now.</p>
+
+<h2>Epilogue</h2>
+
+<p>Creating this advent calendar has been a bit of fun. I've limited myself to spending only around 10-30 minutes for each minipost. I write 2-3 articles in one sitting, and schedule them to be published 3-6 days ahead. That works well with my schedule, mood, and writing ability. (I used to contribute to an Indonesian computer magazine which required me to come up with a full-page article each month. After a while I got burned out because, even with the low frequency of once a month, having to come up with the idea, researching the material, and writing the actual article require spending at least 4-6 hours per article which disrupt my daily workflow.)</p>
+
+<p>Were I to do another series in the future, I would need to improve the tools. Currently I write in an Org document using Emacs, and I hand-write all those HTML links without bothering to create any macros/functions (oh the many "http"'s and "metacpan.org/pod" I've typed in or copy-pasted).</p>
+
+<p>Ideas for other series so far (which I may or may not do): Advent articles in 2015 on CPAN modules I first wrote in 2013 (going retroactive!),  a daily step-by-step tutorial series on creating CLI applications with <a href="https://metacpan.org/pod/Perinci::CmdLine">Perinci::CmdLine</a>, CPAN modules which I published then removed. </p>
+
+<p>Last but not least, merry Christmas and happy holidays to everyone. Thanks for reading and giving feedback.</p>
+                            
+                        </div><!-- .entry-body -->
+                        
+                        <div class="entry-meta-2 pkg">
+                            <ul>
+                                <li><a href="#comments">0 comments</a></li>
+                                <!-- <li><a href="http://blogs.perl.org/users/perlancar/2014/12/day-24-games.html">0 votes</a></li> -->
+                            </ul>
+                        </div>
+                    </div><!-- #entry-6591 -->
+                    
+
+
+
+
+
+<div id="comments" class="comments">
+
+
+    
+    
+    
+
+    
+    
+    <div class="comments-open" id="comments-open">
+        <h2 class="comments-open-header">Leave a comment</h2>
+        <div class="comments-open-content">
+
+        
+            <div id="comment-greeting"></div>
+
+            <form method="post" action="http://blogs.perl.org/mt/mt-comments.fcgi" name="comments_form" id="comments-form" onsubmit="return mtCommentOnSubmit(this)">
+                <input type="hidden" name="static" value="1" />
+                <input type="hidden" name="entry_id" value="6591" />
+                <input type="hidden" name="__lang" value="en" />
+                <input type="hidden" name="parent_id" value="" id="comment-parent-id" />
+                <input type="hidden" name="armor" value="1" />
+                <input type="hidden" name="preview" value="" />
+                <input type="hidden" name="sid" value="" />
+                <div id="comments-open-data">
+                    <div id="comment-form-name">
+                        <label for="comment-author">Name</label>
+                        <input id="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-email">
+                        <label for="comment-email">Email Address</label>
+                        <input id="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-url">
+                        <label for="comment-url">URL</label>
+                        <input id="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-remember-me">
+                        <input type="checkbox" id="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
+                        <label for="comment-bake-cookie">Remember personal info?</label>
+                    </div>
+                </div>
+                <div id="comment-form-reply" style="display:none">
+                    <input type="checkbox" id="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
+                    <label for="comment-reply" id="comment-reply-label"></label>
+                </div>
+                <div id="comments-open-text">
+                    <label for="comment-text">Comments
+                    (You may use HTML tags for style)</label>
+                    <textarea id="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
+                </div>
+                <div id="comments-open-captcha"></div>
+                <div id="comments-open-footer">
+                    <input type="submit" accesskey="v" name="preview_button" id="comment-preview" value="Preview" onclick="this.form.preview.value='1';" />
+                    <input type="submit" accesskey="s" name="post" id="comment-submit" value="Submit" />
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+    <script type="text/javascript">
+    <!--
+    mtAttachEvent("load", mtEntryOnLoad);
+    mtAttachEvent("unload", mtEntryOnUnload);
+    //-->
+    </script>
+    
+
+
+</div>
+
+
+
+</div><!-- #content-main -->
+            
+            <div id="content-aux">
+            
+                
+                <div class="module-aux pkg" id="module-aux-about-author-3580">
+                <div class="module-inner">
+                    <h3>About perlancar</h3>
+                    <p><img class="authorpic" src="http://blogs.perl.org/mt/mt-static/images/default-userpic-50.jpg" alt="user-pic" />
+	            #perl #indonesia</p>
+                    <div class="more-link"><a href="http://blogs.perl.org/mt/mt-cp.fcgi?__mode=view&amp;id=3580">More info &raquo;</a></div>
+                </div>
+                </div><!-- #module-aux-about-author -->
+
+
+
+
+                
+            
+            
+            <div class="module-aux pkg" id="module-aux-search">
+                <div class="module-inner">
+                    
+                    
+                    <h3>Search this blog</h3>
+                    
+                    
+					
+                    <div id="search-form-aux">
+                        <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    
+                            <input type="hidden" name="IncludeBlogs" value="2481" />
+                    
+                            <input type="hidden" name="limit" value="20" />
+                            <label for="search">Search</label>
+                            <input id="local-search" class="query" name="search" value="" />
+                            <input class="submit" type="submit" value="Go" />
+                        </form>
+                    </div><!-- #search-form-aux -->
+                </div>
+                </div><!-- #module-aux-search -->
+                    
+
+            
+            
+                
+                
+                
+                
+            
+
+            </div><!-- #content-aux -->
+
+
+
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+
+        <div id="footer">
+        <div id="footer-inner" class="pkg">
+            <ul>
+                <li class="first"><a href="http://github.com/blogs-perl-org/blogs.perl.org/issues">Feedback welcome</a></li>
+                <li>Hosted by <a href="http://dave.org.uk">Dave Cross</a> of <a href="http://mag-sol.com/">Magnum Solutions</a> and <a href="http://aaroncrane.co.uk/">Aaron Crane</a> of <a href="http://cutbot.net/">Cutbot</a></li>
+            </ul>
+            <ul>
+                <li class="first">Free blog hosting for users of the <a href="http://perl.org">Perl Programming Language</a></li>
+            </ul> 
+
+            <div class="powered-by"><a href="http://www.movabletype.com/" target="_blank">Powered by Movable Type</a></div>
+        </div><!-- #footer-inner -->
+        </div><!-- #footer -->
+            
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+        
+    </div><!-- #container-inner -->
+    </div><!-- #container -->
+
+    
+
+</body>
+</html>
+
+
+
+
+

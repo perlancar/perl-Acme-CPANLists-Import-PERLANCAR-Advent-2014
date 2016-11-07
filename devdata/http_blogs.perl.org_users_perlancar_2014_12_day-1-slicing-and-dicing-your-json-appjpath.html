@@ -1,0 +1,492 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" id="sixapart-standard">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title>Day 1: Slicing and dicing your JSON (App::jpath) | perlancar [blogs.perl.org]</title>
+    <meta name="generator" content="Movable Type Pro 4.38" />
+    
+
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
+    <link href="http://blogs.perl.org/users/perlancar/styles/reset.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/users/perlancar/styles/base.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.css" rel="stylesheet" type="text/css" />
+    <link rel="alternate" type="application/atom+xml" title="Entries" href="http://blogs.perl.org/users/perlancar/atom.xml" />
+
+    <link rel="start" href="http://blogs.perl.org/users/perlancar/" title="Home" />
+    <script type="text/javascript" src="http://blogs.perl.org/users/perlancar/mt.js"></script>
+    <script type="text/javascript" src="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.js"></script>
+    <script type="text/javascript">mtAttachEvent('load', prettyPrint);</script>
+    
+    
+
+
+    
+    <link rel="prev bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html" title="perlancar's 2014 Advent Calendar" />
+    <link rel="next bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/when-uniq-is-not-unique-enough-appnauniq.html" title="Day 2: When uniq is not unique enough (App::nauniq)" />
+    
+    
+
+</head>
+<body class="">
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56332-48']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    <div id="container">
+    <div id="container-inner" class="pkg">
+        <div id="global-nav">
+        <div id="global-nav-inner">
+            <div id="global-nav-search">
+                <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    <input type="hidden" name="limit" value="20" />
+                    <label for="search">Search</label>
+                    <input id="global-search" class="query" name="search" value="Search blogs.perl.org" onfocus="cleanGlobalSearch();" />
+                    <input class="submit" type="submit" value="Go" />
+                </form>
+            </div><!-- #global-nav-search -->
+
+            <ul id="global-nav-links">
+                <li><a href="/">blogs.perl.org</a></li>
+                <li><a href="http://www.perl.org/">perl.org</a></li>
+                <li><a href="http://perlnews.org/">perlnews.org</a></li>
+                <li><a href="http://www.pm.org/">pm.org</a></li>
+		<li id="navbar-signin-widget">
+<span id="navbar-signin-widget-content" class="widget-content"></span>
+</li>
+<script type="text/javascript">
+/* <![CDATA[ */
+mtAttachEvent('usersignin', mtUpdateNavbarSignInWidget);
+mtUpdateNavbarSignInWidget();
+/* ]]> */
+</script>
+            </ul><!-- #global-nav-links -->
+        </div><!-- #global-nav-inner -->
+        </div><!-- #global-nav -->
+        
+
+
+        
+        <div id="header" class="pkg">
+        <div id="header-inner">
+            <h1 id="site-title"><a href="http://blogs.perl.org/users/perlancar/" accesskey="1">perlancar</a></h1>
+            <div id="site-description">A blog about the Perl programming language</div>
+        </div><!-- #header-inner -->
+        </div><!-- #header -->
+        
+        <div id="content">
+        <div id="content-inner" class="pkg">
+            <div id="content-main">
+            
+
+
+<div class="entry" id="entry-6531">
+                        <h2 class="entry-title">Day 1: Slicing and dicing your JSON (App::jpath)</h2>
+                        
+                        <div class="entry-meta-1 pkg">
+                            <span class="byline">By <a href="http://blogs.perl.org/users/perlancar/" class="profile-link">perlancar</a></span>
+							<span class="dateline">on <span class="date" title="iso8601">December  1, 2014 12:00 AM</span></span>
+							
+						</div><!-- .entry-meta -->
+                        
+                        <div class="entry-body">
+                            <p><b>About the series</b>: perlancar's 2014 Advent Calendar: Introduction to a selection of 24 modules which I published in 2014. <a href="http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html">Table of contents</a>.</p>
+
+<p><a href="https://metacpan.org/pod/jpath">jpath</a> (from App-jpath distribution) is a simple command-line interface wrapper for <a href="https://metacpan.org/pod/JSON::Path">JSON::Path</a> written by <a href="https://metacpan.org/author/TOBYINK">TOBYINK</a>. With the provided <tt>jpath</tt> utility you can quickly select and transform some branch/node of a data structure. As a bonus, <tt>jpath</tt> also accepts/outputs Perl and YAML in addition to JSON.</p>
+
+<p>A quick primer on <a href="http://goessner.net/articles/JsonPath/">JSON Path</a>: <tt>$.</tt> to get everything as is, <tt>$.keyname</tt> to get hash value by key, <tt>$.[12]</tt> to get array element by index, <tt>$.[1,2,3]</tt> to get several elements (union), <tt>$.[*]</tt> to get all array elements</tt>, <tt>?(...)</tt> to apply a filter (the Perl variant has some syntax modification for the filter). There are a few other constructs provided, please see the linked JSON Path page.</p>
+
+<p>Some examples:</p>
+
+<pre>% cat bookstore.json
+{
+   "store" : {
+      "bicycle" : [
+         {
+            "color" : "red",
+            "price" : 19.95
+         }
+      ],
+      "book" : [
+         {
+            "category" : "reference",
+            "author" : "Nigel Rees",
+            "title" : "Sayings of the Century",
+            "price" : 8.95
+         },
+         {
+            "category" : "fiction",
+            "author" : "Evelyn Waugh",
+            "title" : "Sword of Honour",
+            "price" : 12.99
+         },
+         {
+            "category" : "fiction",
+            "author" : "Herman Melville",
+            "title" : "Moby Dick",
+            "isbn" : "0-553-21311-3",
+            "price" : 8.99
+         },
+         {
+            "category" : "fiction",
+            "author" : "J. R. R. Tolkien",
+            "title" : "The Lord of the Rings",
+            "isbn" : "0-395-19395-8",
+            "price" : 22.99
+         }
+      ]
+   }
+}
+
+% jpath '$.' bookstore.json; # get everything as is
+{
+   "store" : {
+      "bicycle" : [
+         {
+            "color" : "red",
+            "price" : 19.95
+         }
+      ],
+      "book" : [
+         {
+            "category" : "reference",
+            "author" : "Nigel Rees",
+            "title" : "Sayings of the Century",
+            "price" : 8.95
+         },
+         {
+            "category" : "fiction",
+            "author" : "Evelyn Waugh",
+            "title" : "Sword of Honour",
+            "price" : 12.99
+         },
+         {
+            "category" : "fiction",
+            "author" : "Herman Melville",
+            "title" : "Moby Dick",
+            "isbn" : "0-553-21311-3",
+            "price" : 8.99
+         },
+         {
+            "category" : "fiction",
+            "author" : "J. R. R. Tolkien",
+            "title" : "The Lord of the Rings",
+            "isbn" : "0-395-19395-8",
+            "price" : 22.99
+         }
+      ]
+   }
+}
+
+% jpath '$.store.book' bookstore.json; # get only the books
+[
+   [
+      {
+         "author": "Nigel Rees",
+         "category": "reference",
+         "price": 8.95,
+         "title": "Sayings of the Century"
+      },
+      {
+         "author": "Evelyn Waugh",
+         "category": "fiction",
+         "price": 12.99,
+         "title": "Sword of Honour"
+      },
+      {
+         "author": "Herman Melville",
+         "category": "fiction",
+         "isbn": "0-553-21311-3",
+         "price": 8.99,
+         "title": "Moby Dick"
+      },
+      {
+         "author": "J. R. R. Tolkien",
+         "category": "fiction",
+         "isbn": "0-395-19395-8",
+         "price": 22.99,
+         "title": "The Lord of the Rings"
+      }
+   ]
+]
+
+% jpath '$.store.book[*]' bookstore.json; # get books, each book as separate elements
+[
+   {
+      "author": "Nigel Rees",
+      "category": "reference",
+      "price": 8.95,
+      "title": "Sayings of the Century"
+   },
+   {
+      "author": "Evelyn Waugh",
+      "category": "fiction",
+      "price": 12.99,
+      "title": "Sword of Honour"
+   },
+   {
+      "author": "Herman Melville",
+      "category": "fiction",
+      "isbn": "0-553-21311-3",
+      "price": 8.99,
+      "title": "Moby Dick"
+   },
+   {
+      "author": "J. R. R. Tolkien",
+      "category": "fiction",
+      "isbn": "0-395-19395-8",
+      "price": 22.99,
+      "title": "The Lord of the Rings"
+   }
+]
+
+% jpath '$.store.book[]' bookstore.json; # only get the first and third books
+[
+   {
+      "author": "Nigel Rees",
+      "category": "reference",
+      "price": 8.95,
+      "title": "Sayings of the Century"
+   },
+   {
+      "author": "J. R. R. Tolkien",
+      "category": "fiction",
+      "isbn": "0-395-19395-8",
+      "price": 22.99,
+      "title": "The Lord of the Rings"
+   }
+]
+
+% jpath '$.store.book[?($_->{price} < 10.0)]' bookstore.json; # only get books less than 10 bucks
+[
+   {
+      "author": "Nigel Rees",
+      "category": "reference",
+      "price": "8.95",
+      "title": "Sayings of the Century"
+   },
+   {
+      "author": "Herman Melville",
+      "category": "fiction",
+      "isbn": "0-553-21311-3",
+      "price": "8.99",
+      "title": "Moby Dick"
+   }
+]
+
+% jpath '$.store.book[?($_->{price} < 10.0)]' bookstore.json -o perl; # output in perl
+[
+  {
+    author   => "Nigel Rees",             # .{0}
+    category => "reference",              # .{1}
+    price    => 8.95,                     # .{2}
+    title    => "Sayings of the Century", # .{3}
+  }, # [0]
+  {
+    author   => "Herman Melville", # .{0}
+    category => "fiction",         # .{1}
+    isbn     => "0-553-21311-3",   # .{2}
+    price    => 8.99,              # .{3}
+    title    => "Moby Dick",       # .{4}
+  }, # [1]
+]
+</pre>
+
+<p>Of course, if you plan to work with lots of JSON data, most of the time you'll want to use <a href="http://stedolan.github.io/jq">jq</a> instead which is much more powerful and much faster because it's written in C. But if you like JSON Path syntax and sometimes want to use Perl/YAML in addition to JSON, <tt>jpath</tt> might be useful to you.<br />
+</p>
+                            
+                        </div><!-- .entry-body -->
+                        
+                        <div class="entry-meta-2 pkg">
+                            <ul>
+                                <li><a href="#comments">0 comments</a></li>
+                                <!-- <li><a href="http://blogs.perl.org/users/perlancar/2014/12/day-1-slicing-and-dicing-your-json-appjpath.html">0 votes</a></li> -->
+                            </ul>
+                        </div>
+                    </div><!-- #entry-6531 -->
+                    
+
+
+
+
+
+<div id="comments" class="comments">
+
+
+    
+    
+    
+
+    
+    
+    <div class="comments-open" id="comments-open">
+        <h2 class="comments-open-header">Leave a comment</h2>
+        <div class="comments-open-content">
+
+        
+            <div id="comment-greeting"></div>
+
+            <form method="post" action="http://blogs.perl.org/mt/mt-comments.fcgi" name="comments_form" id="comments-form" onsubmit="return mtCommentOnSubmit(this)">
+                <input type="hidden" name="static" value="1" />
+                <input type="hidden" name="entry_id" value="6531" />
+                <input type="hidden" name="__lang" value="en" />
+                <input type="hidden" name="parent_id" value="" id="comment-parent-id" />
+                <input type="hidden" name="armor" value="1" />
+                <input type="hidden" name="preview" value="" />
+                <input type="hidden" name="sid" value="" />
+                <div id="comments-open-data">
+                    <div id="comment-form-name">
+                        <label for="comment-author">Name</label>
+                        <input id="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-email">
+                        <label for="comment-email">Email Address</label>
+                        <input id="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-url">
+                        <label for="comment-url">URL</label>
+                        <input id="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-remember-me">
+                        <input type="checkbox" id="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
+                        <label for="comment-bake-cookie">Remember personal info?</label>
+                    </div>
+                </div>
+                <div id="comment-form-reply" style="display:none">
+                    <input type="checkbox" id="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
+                    <label for="comment-reply" id="comment-reply-label"></label>
+                </div>
+                <div id="comments-open-text">
+                    <label for="comment-text">Comments
+                    (You may use HTML tags for style)</label>
+                    <textarea id="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
+                </div>
+                <div id="comments-open-captcha"></div>
+                <div id="comments-open-footer">
+                    <input type="submit" accesskey="v" name="preview_button" id="comment-preview" value="Preview" onclick="this.form.preview.value='1';" />
+                    <input type="submit" accesskey="s" name="post" id="comment-submit" value="Submit" />
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+    <script type="text/javascript">
+    <!--
+    mtAttachEvent("load", mtEntryOnLoad);
+    mtAttachEvent("unload", mtEntryOnUnload);
+    //-->
+    </script>
+    
+
+
+</div>
+
+
+
+</div><!-- #content-main -->
+            
+            <div id="content-aux">
+            
+                
+                <div class="module-aux pkg" id="module-aux-about-author-3580">
+                <div class="module-inner">
+                    <h3>About perlancar</h3>
+                    <p><img class="authorpic" src="http://blogs.perl.org/mt/mt-static/images/default-userpic-50.jpg" alt="user-pic" />
+	            #perl #indonesia</p>
+                    <div class="more-link"><a href="http://blogs.perl.org/mt/mt-cp.fcgi?__mode=view&amp;id=3580">More info &raquo;</a></div>
+                </div>
+                </div><!-- #module-aux-about-author -->
+
+
+
+
+                
+            
+            
+            <div class="module-aux pkg" id="module-aux-search">
+                <div class="module-inner">
+                    
+                    
+                    <h3>Search this blog</h3>
+                    
+                    
+					
+                    <div id="search-form-aux">
+                        <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    
+                            <input type="hidden" name="IncludeBlogs" value="2481" />
+                    
+                            <input type="hidden" name="limit" value="20" />
+                            <label for="search">Search</label>
+                            <input id="local-search" class="query" name="search" value="" />
+                            <input class="submit" type="submit" value="Go" />
+                        </form>
+                    </div><!-- #search-form-aux -->
+                </div>
+                </div><!-- #module-aux-search -->
+                    
+
+            
+            
+                
+                
+                
+                
+            
+
+            </div><!-- #content-aux -->
+
+
+
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+
+        <div id="footer">
+        <div id="footer-inner" class="pkg">
+            <ul>
+                <li class="first"><a href="http://github.com/blogs-perl-org/blogs.perl.org/issues">Feedback welcome</a></li>
+                <li>Hosted by <a href="http://dave.org.uk">Dave Cross</a> of <a href="http://mag-sol.com/">Magnum Solutions</a> and <a href="http://aaroncrane.co.uk/">Aaron Crane</a> of <a href="http://cutbot.net/">Cutbot</a></li>
+            </ul>
+            <ul>
+                <li class="first">Free blog hosting for users of the <a href="http://perl.org">Perl Programming Language</a></li>
+            </ul> 
+
+            <div class="powered-by"><a href="http://www.movabletype.com/" target="_blank">Powered by Movable Type</a></div>
+        </div><!-- #footer-inner -->
+        </div><!-- #footer -->
+            
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+        
+    </div><!-- #container-inner -->
+    </div><!-- #container -->
+
+    
+
+</body>
+</html>
+
+
+
+
+

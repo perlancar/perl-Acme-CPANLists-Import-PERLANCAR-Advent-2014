@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" id="sixapart-standard">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title>Day 6: Think globally, act localizably (File::umask, Locale::Tie, Unix::setuid)   | perlancar [blogs.perl.org]</title>
+    <meta name="generator" content="Movable Type Pro 4.38" />
+    
+
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
+    <link href="http://blogs.perl.org/users/perlancar/styles/reset.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/users/perlancar/styles/base.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.css" rel="stylesheet" type="text/css" />
+    <link rel="alternate" type="application/atom+xml" title="Entries" href="http://blogs.perl.org/users/perlancar/atom.xml" />
+
+    <link rel="start" href="http://blogs.perl.org/users/perlancar/" title="Home" />
+    <script type="text/javascript" src="http://blogs.perl.org/users/perlancar/mt.js"></script>
+    <script type="text/javascript" src="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.js"></script>
+    <script type="text/javascript">mtAttachEvent('load', prettyPrint);</script>
+    
+    
+
+
+    
+    <link rel="prev bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-5-look-ma-no-argument-list-too-long-apprmhere.html" title="Day 5: Look ma, no 'argument list too long'! (App::rmhere)  " />
+    <link rel="next bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-7-set-screensaver-timeout-from-the-command-line-appsetscreensavertimeout.html" title="Day 7: Set screensaver timeout from the command-line (App::SetScreensaverTimeout)" />
+    
+    
+
+</head>
+<body class="">
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56332-48']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    <div id="container">
+    <div id="container-inner" class="pkg">
+        <div id="global-nav">
+        <div id="global-nav-inner">
+            <div id="global-nav-search">
+                <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    <input type="hidden" name="limit" value="20" />
+                    <label for="search">Search</label>
+                    <input id="global-search" class="query" name="search" value="Search blogs.perl.org" onfocus="cleanGlobalSearch();" />
+                    <input class="submit" type="submit" value="Go" />
+                </form>
+            </div><!-- #global-nav-search -->
+
+            <ul id="global-nav-links">
+                <li><a href="/">blogs.perl.org</a></li>
+                <li><a href="http://www.perl.org/">perl.org</a></li>
+                <li><a href="http://perlnews.org/">perlnews.org</a></li>
+                <li><a href="http://www.pm.org/">pm.org</a></li>
+		<li id="navbar-signin-widget">
+<span id="navbar-signin-widget-content" class="widget-content"></span>
+</li>
+<script type="text/javascript">
+/* <![CDATA[ */
+mtAttachEvent('usersignin', mtUpdateNavbarSignInWidget);
+mtUpdateNavbarSignInWidget();
+/* ]]> */
+</script>
+            </ul><!-- #global-nav-links -->
+        </div><!-- #global-nav-inner -->
+        </div><!-- #global-nav -->
+        
+
+
+        
+        <div id="header" class="pkg">
+        <div id="header-inner">
+            <h1 id="site-title"><a href="http://blogs.perl.org/users/perlancar/" accesskey="1">perlancar</a></h1>
+            <div id="site-description">A blog about the Perl programming language</div>
+        </div><!-- #header-inner -->
+        </div><!-- #header -->
+        
+        <div id="content">
+        <div id="content-inner" class="pkg">
+            <div id="content-main">
+            
+
+
+<div class="entry" id="entry-6536">
+                        <h2 class="entry-title">Day 6: Think globally, act localizably (File::umask, Locale::Tie, Unix::setuid)  </h2>
+                        
+                        <div class="entry-meta-1 pkg">
+                            <span class="byline">By <a href="http://blogs.perl.org/users/perlancar/" class="profile-link">perlancar</a></span>
+							<span class="dateline">on <span class="date" title="iso8601">December  6, 2014 12:00 AM</span></span>
+							
+						</div><!-- .entry-meta -->
+                        
+                        <div class="entry-body">
+                            <p><b>About the series</b>: perlancar's 2014 Advent Calendar: Introduction to a selection of 24 modules which I published in 2014. <a href="http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html">Table of contents</a>.</p>
+
+<p>Local variables or dynamic scoping is a very nifty feature of Perl that nowadays do not exist in a lot of other languages. It allows you to temporarily set the value of a global variable during a block/scope during runtime, effectively localizing global variables. For example, even though some modules provide configuration settings as global variables, like <a href="https://metacpan.org/pod/Data::Dump">Data::Dump</a>'s <tt>$INDENT</tt>, you can change the values of these variables without having a global effect by using <tt>local</tt>:</p>
+
+<pre><code class="prettyprint">{
+    local $Data::Dump::INDENT = ""; # disable indenting
+    $res = Data::Dump::dump(...);
+};
+# here the value of $Data::Dump::INDENT is restored the original value
+</code></pre>
+
+<p>So you can see that the automatic restore of variables at the end of scope is the crux of the niceness. Combined with <tt>tie</tt>, this makes for a nice technique: you can change some global state simply by setting a value to tied variable locally, and that state will be restored automatically at the end of a scope. The first example of this concept that I saw was in <a href="https://metacpan.org/pod/File::chdir">File::chdir</a>. I love this technique so much that I created several other modules with the same concept: <a href="https://metacpan.org/pod/Locale::Tie">Locale::Tie</a> (to set locale locally), <a href="https://metacpan.org/pod/File::umask">File::umask</a> (to set umask), and <a href="https://metacpan.org/pod/Unix::setuid">Unix::setuid</a> (to set UID/EUID, like a localizable version of <tt>$&gt;</tt> and <tt>$&lt;</tt>). And I'm still looking for more things which I can apply this concept to.<br />
+</p>
+                            
+                        </div><!-- .entry-body -->
+                        
+                        <div class="entry-meta-2 pkg">
+                            <ul>
+                                <li><a href="#comments">3 comments</a></li>
+                                <!-- <li><a href="http://blogs.perl.org/users/perlancar/2014/12/day-6-think-globally-act-localizably-fileumask-localetie-unixsetuid.html">0 votes</a></li> -->
+                            </ul>
+                        </div>
+                    </div><!-- #entry-6536 -->
+                    
+
+
+
+
+
+<div id="comments" class="comments">
+
+
+    
+    
+        
+    <h2 class="comments-header">3 Comments</h2>
+    
+    <div id="comments-content" class="comments-content" style="clear: left;">
+        
+        <div id="comment-1477973" class="comment">
+    <div class="inner">
+        <div class="comment-header">
+            <div class="asset-meta">
+                <span class="byline">
+                    <a class="commenter-profile" href="http://codespeaks.blogspot.com/"><img alt="Author Profile Page" src="http://blogs.perl.org/mt/mt-static/images/comment/mt_logo.png" width="16" height="16" /></a>
+
+                    <span class="vcard author"><a title="http://codespeaks.blogspot.com/" href="http://codespeaks.blogspot.com/">Leon Timmermans</a></span>
+
+                    | <a href="http://blogs.perl.org/users/perlancar/2014/12/day-6-think-globally-act-localizably-fileumask-localetie-unixsetuid.html#comment-1477973"><abbr class="published" title="2014-12-06T10:15:12+07:00">December  6, 2014 10:15 AM</abbr></a>
+
+                    | <a title="Reply" href="javascript:void(0);" onclick="mtReplyCommentOnClick(1477973, 'Leon Timmermans')">Reply</a>
+
+                </span>
+            </div>
+        </div>
+        <div class="comment-content">
+            <p>Unix::setuid is a poorly worked out idea. Firstly because it doesn't report errors in any way (despite typically being used in security-critical ways). Secondly because it omits the saved IDs (which are fairly important).</p>
+
+<p>That said, I do like the general idea. Signal::Mask and Signal::Pending do something similar.</p>
+        </div>
+    </div>
+</div>
+        
+    
+        
+        <div id="comment-1478876" class="comment comment-reply entry-author-comment">
+    <div class="inner">
+        <div class="comment-header">
+            <div class="asset-meta">
+                <span class="byline">
+                    <a class="commenter-profile" href="https://twitter.com/perlancar"><img alt="Author Profile Page" src="http://blogs.perl.org/mt/mt-static/images/comment/mt_logo.png" width="16" height="16" /></a>
+
+                    <span class="vcard author"><a title="https://twitter.com/perlancar" href="https://twitter.com/perlancar" rel="nofollow">perlancar</a></span> replied to <a href="http://blogs.perl.org/users/perlancar/2014/12/day-6-think-globally-act-localizably-fileumask-localetie-unixsetuid.html#comment-1477973">comment from Leon Timmermans</a>
+
+                    | <a href="http://blogs.perl.org/users/perlancar/2014/12/day-6-think-globally-act-localizably-fileumask-localetie-unixsetuid.html#comment-1478876"><abbr class="published" title="2014-12-06T22:15:45+07:00">December  6, 2014 10:15 PM</abbr></a>
+
+                    | <a title="Reply" href="javascript:void(0);" onclick="mtReplyCommentOnClick(1478876, 'perlancar')">Reply</a>
+
+                </span>
+            </div>
+        </div>
+        <div class="comment-content">
+            <p>Thanks for your input. I'm not sure what you meant by "saved IDs". </p>
+
+<p>Come to think of it, Unix::setuid is not necessary at all, because I might as well just localize $, et al directly! The only convenience provided by Unix::setuid is conversion from username, but I'm not sure how valuable that is.</p>
+        </div>
+    </div>
+</div>
+        
+    
+        
+        <div id="comment-1483433" class="comment">
+    <div class="inner">
+        <div class="comment-header">
+            <div class="asset-meta">
+                <span class="byline">
+                    <a class="commenter-profile" href="http://codespeaks.blogspot.com/"><img alt="Author Profile Page" src="http://blogs.perl.org/mt/mt-static/images/comment/mt_logo.png" width="16" height="16" /></a>
+
+                    <span class="vcard author"><a title="http://codespeaks.blogspot.com/" href="http://codespeaks.blogspot.com/">Leon Timmermans</a></span>
+
+                    | <a href="http://blogs.perl.org/users/perlancar/2014/12/day-6-think-globally-act-localizably-fileumask-localetie-unixsetuid.html#comment-1483433"><abbr class="published" title="2014-12-10T22:53:24+07:00">December 10, 2014 10:53 PM</abbr></a>
+
+                    | <a title="Reply" href="javascript:void(0);" onclick="mtReplyCommentOnClick(1483433, 'Leon Timmermans')">Reply</a>
+
+                </span>
+            </div>
+        </div>
+        <div class="comment-content">
+            <blockquote>Thanks for your input. I'm not sure what you meant by "saved IDs".</blockquote>
+
+<p>You may want to read <a href="https://www.usenix.org/conference/11th-usenix-security-symposium/setuid-demystified">Setuid Demystified</a> first before writing any kind of setuid wrapper.</p>
+        </div>
+    </div>
+</div>
+        
+    </div>
+        
+    
+    
+
+    
+    
+    <div class="comments-open" id="comments-open">
+        <h2 class="comments-open-header">Leave a comment</h2>
+        <div class="comments-open-content">
+
+        
+            <div id="comment-greeting"></div>
+
+            <form method="post" action="http://blogs.perl.org/mt/mt-comments.fcgi" name="comments_form" id="comments-form" onsubmit="return mtCommentOnSubmit(this)">
+                <input type="hidden" name="static" value="1" />
+                <input type="hidden" name="entry_id" value="6536" />
+                <input type="hidden" name="__lang" value="en" />
+                <input type="hidden" name="parent_id" value="" id="comment-parent-id" />
+                <input type="hidden" name="armor" value="1" />
+                <input type="hidden" name="preview" value="" />
+                <input type="hidden" name="sid" value="" />
+                <div id="comments-open-data">
+                    <div id="comment-form-name">
+                        <label for="comment-author">Name</label>
+                        <input id="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-email">
+                        <label for="comment-email">Email Address</label>
+                        <input id="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-url">
+                        <label for="comment-url">URL</label>
+                        <input id="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-remember-me">
+                        <input type="checkbox" id="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
+                        <label for="comment-bake-cookie">Remember personal info?</label>
+                    </div>
+                </div>
+                <div id="comment-form-reply" style="display:none">
+                    <input type="checkbox" id="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
+                    <label for="comment-reply" id="comment-reply-label"></label>
+                </div>
+                <div id="comments-open-text">
+                    <label for="comment-text">Comments
+                    (You may use HTML tags for style)</label>
+                    <textarea id="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
+                </div>
+                <div id="comments-open-captcha"></div>
+                <div id="comments-open-footer">
+                    <input type="submit" accesskey="v" name="preview_button" id="comment-preview" value="Preview" onclick="this.form.preview.value='1';" />
+                    <input type="submit" accesskey="s" name="post" id="comment-submit" value="Submit" />
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+    <script type="text/javascript">
+    <!--
+    mtAttachEvent("load", mtEntryOnLoad);
+    mtAttachEvent("unload", mtEntryOnUnload);
+    //-->
+    </script>
+    
+
+
+</div>
+
+
+
+</div><!-- #content-main -->
+            
+            <div id="content-aux">
+            
+                
+                <div class="module-aux pkg" id="module-aux-about-author-3580">
+                <div class="module-inner">
+                    <h3>About perlancar</h3>
+                    <p><img class="authorpic" src="http://blogs.perl.org/mt/mt-static/images/default-userpic-50.jpg" alt="user-pic" />
+	            #perl #indonesia</p>
+                    <div class="more-link"><a href="http://blogs.perl.org/mt/mt-cp.fcgi?__mode=view&amp;id=3580">More info &raquo;</a></div>
+                </div>
+                </div><!-- #module-aux-about-author -->
+
+
+
+
+                
+            
+            
+            <div class="module-aux pkg" id="module-aux-search">
+                <div class="module-inner">
+                    
+                    
+                    <h3>Search this blog</h3>
+                    
+                    
+					
+                    <div id="search-form-aux">
+                        <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    
+                            <input type="hidden" name="IncludeBlogs" value="2481" />
+                    
+                            <input type="hidden" name="limit" value="20" />
+                            <label for="search">Search</label>
+                            <input id="local-search" class="query" name="search" value="" />
+                            <input class="submit" type="submit" value="Go" />
+                        </form>
+                    </div><!-- #search-form-aux -->
+                </div>
+                </div><!-- #module-aux-search -->
+                    
+
+            
+            
+                
+                
+                
+                
+            
+
+            </div><!-- #content-aux -->
+
+
+
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+
+        <div id="footer">
+        <div id="footer-inner" class="pkg">
+            <ul>
+                <li class="first"><a href="http://github.com/blogs-perl-org/blogs.perl.org/issues">Feedback welcome</a></li>
+                <li>Hosted by <a href="http://dave.org.uk">Dave Cross</a> of <a href="http://mag-sol.com/">Magnum Solutions</a> and <a href="http://aaroncrane.co.uk/">Aaron Crane</a> of <a href="http://cutbot.net/">Cutbot</a></li>
+            </ul>
+            <ul>
+                <li class="first">Free blog hosting for users of the <a href="http://perl.org">Perl Programming Language</a></li>
+            </ul> 
+
+            <div class="powered-by"><a href="http://www.movabletype.com/" target="_blank">Powered by Movable Type</a></div>
+        </div><!-- #footer-inner -->
+        </div><!-- #footer -->
+            
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+        
+    </div><!-- #container-inner -->
+    </div><!-- #container -->
+
+    
+
+</body>
+</html>
+
+
+
+
+

@@ -1,0 +1,74 @@
+#!/usr/bin/env perl
+
+use 5.010;
+use strict;
+use warnings;
+use FindBin '$Bin';
+
+use App::CreateAcmeCPANListsImportModules;
+use Perinci::Sub::Util qw(gen_curried_sub);
+use Perinci::CmdLine::Any;
+
+my %urls = (
+    "01" => "http://blogs.perl.org/users/perlancar/2014/12/day-1-slicing-and-dicing-your-json-appjpath.html",
+    "02" => "http://blogs.perl.org/users/perlancar/2014/12/when-uniq-is-not-unique-enough-appnauniq.html",
+    "03" => "http://blogs.perl.org/users/perlancar/2014/12/day-3-diff-ing-your-database-structure-dbixdiffstruct.html",
+    "04" => "http://blogs.perl.org/users/perlancar/2014/12/day-4-date-calculator-shell-appdatecalc.html",
+    "05" => "http://blogs.perl.org/users/perlancar/2014/12/day-5-look-ma-no-argument-list-too-long-apprmhere.html",
+    "06" => "http://blogs.perl.org/users/perlancar/2014/12/day-6-think-globally-act-localizably-fileumask-localetie-unixsetuid.html",
+    "07" => "http://blogs.perl.org/users/perlancar/2014/12/day-7-set-screensaver-timeout-from-the-command-line-appsetscreensavertimeout.html",
+    "08" => "http://blogs.perl.org/users/perlancar/2014/12/day-8-stopwatch-appstopw.html",
+    "09" => "http://blogs.perl.org/users/perlancar/2014/12/day-9-set-operations-with-files-appsetop.html",
+    "10" => "http://blogs.perl.org/users/perlancar/2014/12/day-10-finding-modules-path-and-more-modulepathmore.html",
+    "11" => "http://blogs.perl.org/users/perlancar/2014/12/day-11-tab-completion-galore-apppmplprogdzilgitutils.html",
+    "12" => "http://blogs.perl.org/users/perlancar/2014/12/day-12-a-fatpackable-ssl-aware-httptiny-but-sadly-with-a-catch.html",
+    "13" => "http://blogs.perl.org/users/perlancar/2014/12/day-13-pan.html",
+    "14" => "http://blogs.perl.org/users/perlancar/2014/12/day-14-what-the-procchilderror.html",
+    "15" => "http://blogs.perl.org/users/perlancar/2014/12/day-15-words-on-cpan-appwordlist.html",
+    "16" => "http://blogs.perl.org/users/perlancar/2014/12/day-16-making-tab-completion-setup-seamless-for-users-appshcompgen.html",
+    "17" => "http://blogs.perl.org/users/perlancar/2014/12/day-17-checking-process-existence-and-listing-processes-procfind.html",
+    "18" => "http://blogs.perl.org/users/perlancar/2014/12/day-18-checking-unsaved-files-fileunsaved.html",
+    "19" => "http://blogs.perl.org/users/perlancar/2014/12/day-19-tracing-your-perl-programs-execution-appplstrace.html",
+    "20" => "http://blogs.perl.org/users/perlancar/2014/12/day-20-creating-test-databases-testwithdb.html",
+    "21" => "http://blogs.perl.org/users/perlancar/2014/12/day-21-checking-if-a-string-contains-shell-wildcard-stringwildcardbash.html",
+    "22" => "http://blogs.perl.org/users/perlancar/2014/12/day-22-safer-system-alternative-sysrunsafer.html",
+    "23" => "http://blogs.perl.org/users/perlancar/2014/12/day-23-appchart-and-textchart.html",
+    "24" => "http://blogs.perl.org/users/perlancar/2014/12/day-24-games.html",
+);
+
+my %add_modules = (
+    "02" => ["App::nauniq"],
+    "07" => ["App::fsql"],
+    "09" => ["App::setop"],
+    "12" => ["HTTP::Tiny::CLI"], # already removed
+    "13" => ["XPAN::Query"], # already removed
+);
+
+gen_curried_sub(
+    'App::CreateAcmeCPANListsImportModules::create_acme_cpanlists_import_modules',
+    {
+        modules => [
+            {
+                name => '2014',
+                url => "http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html",
+                extract_urls => [map { $urls{$_} } "01".."24"],
+                summary => "Modules mentioned in PERLANCAR's 2014 advent calendar article series",
+            },
+            (map {+{
+                name => "2014_12_$_",
+                url => $urls{$_},
+                summary => "Modules mentioned in PERLANCAR\'s 2014 advent calendar article series (day $_)",
+                add_modules => $add_modules{$_},
+            }} "01".."24"),
+        ],
+        namespace => 'Acme::CPANLists::Import::PERLANCAR::Advent',
+        user_agent => 'Mozilla/5.0',
+        dist_dir => "$Bin/..",
+    },
+    'app',
+);
+
+Perinci::CmdLine::Any->new(
+    url => '/main/app',
+    log => 1,
+)->run;

@@ -1,0 +1,322 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" id="sixapart-standard">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title>Day 21: Checking if a string contains shell wildcard (String::Wildcard::Bash) | perlancar [blogs.perl.org]</title>
+    <meta name="generator" content="Movable Type Pro 4.38" />
+    
+
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
+    <link href="http://blogs.perl.org/users/perlancar/styles/reset.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/users/perlancar/styles/base.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.css" rel="stylesheet" type="text/css" />
+    <link rel="alternate" type="application/atom+xml" title="Entries" href="http://blogs.perl.org/users/perlancar/atom.xml" />
+
+    <link rel="start" href="http://blogs.perl.org/users/perlancar/" title="Home" />
+    <script type="text/javascript" src="http://blogs.perl.org/users/perlancar/mt.js"></script>
+    <script type="text/javascript" src="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.js"></script>
+    <script type="text/javascript">mtAttachEvent('load', prettyPrint);</script>
+    
+    
+
+
+    
+    <link rel="prev bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-20-creating-test-databases-testwithdb.html" title="Day 20: Creating test databases (Test::WithDB)" />
+    <link rel="next bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-22-safer-system-alternative-sysrunsafer.html" title="Day 22: Safer system() alternative (Sys::Run::Safer)" />
+    
+    
+
+</head>
+<body class="">
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56332-48']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    <div id="container">
+    <div id="container-inner" class="pkg">
+        <div id="global-nav">
+        <div id="global-nav-inner">
+            <div id="global-nav-search">
+                <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    <input type="hidden" name="limit" value="20" />
+                    <label for="search">Search</label>
+                    <input id="global-search" class="query" name="search" value="Search blogs.perl.org" onfocus="cleanGlobalSearch();" />
+                    <input class="submit" type="submit" value="Go" />
+                </form>
+            </div><!-- #global-nav-search -->
+
+            <ul id="global-nav-links">
+                <li><a href="/">blogs.perl.org</a></li>
+                <li><a href="http://www.perl.org/">perl.org</a></li>
+                <li><a href="http://perlnews.org/">perlnews.org</a></li>
+                <li><a href="http://www.pm.org/">pm.org</a></li>
+		<li id="navbar-signin-widget">
+<span id="navbar-signin-widget-content" class="widget-content"></span>
+</li>
+<script type="text/javascript">
+/* <![CDATA[ */
+mtAttachEvent('usersignin', mtUpdateNavbarSignInWidget);
+mtUpdateNavbarSignInWidget();
+/* ]]> */
+</script>
+            </ul><!-- #global-nav-links -->
+        </div><!-- #global-nav-inner -->
+        </div><!-- #global-nav -->
+        
+
+
+        
+        <div id="header" class="pkg">
+        <div id="header-inner">
+            <h1 id="site-title"><a href="http://blogs.perl.org/users/perlancar/" accesskey="1">perlancar</a></h1>
+            <div id="site-description">A blog about the Perl programming language</div>
+        </div><!-- #header-inner -->
+        </div><!-- #header -->
+        
+        <div id="content">
+        <div id="content-inner" class="pkg">
+            <div id="content-main">
+            
+
+
+<div class="entry" id="entry-6586">
+                        <h2 class="entry-title">Day 21: Checking if a string contains shell wildcard (String::Wildcard::Bash)</h2>
+                        
+                        <div class="entry-meta-1 pkg">
+                            <span class="byline">By <a href="http://blogs.perl.org/users/perlancar/" class="profile-link">perlancar</a></span>
+							<span class="dateline">on <span class="date" title="iso8601">December 21, 2014 12:00 AM</span></span>
+							
+						</div><!-- .entry-meta -->
+                        
+                        <div class="entry-body">
+                            <p><b>About the series</b>: perlancar's 2014 Advent Calendar: Introduction to a selection of 24 modules which I published in 2014. <a href="http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html">Table of contents</a>.</p>
+
+<p>A few months ago, during work with shell tab completion, I wanted a routine to know if a string contains a wildcard. For example, if I have this on the command-line buffer: <tt>emacs f*txt</tt> and press Tab, shells will usually be helpful and show me the list of filenames matching that wildcard. So I wanted to test whether <tt>f*txt</tt> contains wildcard and if yes then di a <tt>glob()</tt> on it, but otherwise I'll do a simple search for the files on the directory (actually you can just try and <tt>glob()</tt> it anyway without caring if something contains a wildcard, or perhaps do a <tt>glob("$arg*")</tt> just to make sure that something <i>will</i> contain a wildcard and thus won't confuse <tt>glob()</tt>, but somehow I didn't like that easy approach). And as I was sure there will be other cases where I'll need this routine (but can't do a <tt>glob()</tt> because there are no real files to check), I went ahead and wrote the routine anyway. The result is <a href="https://metacpan.org/pod/String::Wildcard:<br />
+:Bash">String::Wildcard::Bash</a>. (To be complete, I also wrote <a href="https://metacpan.org/pod/String::Wildcard::DOS">String::Wildcard::DOS</a> and <a href="https://metacpan.org/pod/String::Wildcard::SQL">String::Wildcard::SQL</a>.)</p>
+
+<p>I managed to find a single regex to do this, that is good enough for my needs (you can view the source of the String::Wildcard::Bash). Be warned that it's quite <a href="http://en.wikipedia.org/wiki/Leaning_toothpick_syndrome">toothpicky</a>.</p>
+
+<p>Detecting bash wildcard presence is not as simple as detecting DOS and SQL wildcards, because there are other things to check aside from the existence of the joker characters (<tt>*</tt> and <tt>?</tt>) themselves. First you have a backslash mechanism:</p>
+
+<pre>
+foo*bar    # has wildcard
+foo\*bar   # no wildcard
+foo\\*bar  # has wildcard
+</pre>
+
+<p>Then you get character classes, which I'd categorize as wildcard too:</p>
+
+<pre>
+f[aeiou]o  # has wildcard
+f\[aeiou]o # no wildcard
+</pre>
+
+<p>And you also have brace expansion, which I also categorize as wildcard. Note that other wildcards like joker and character classes are expanded within braces (since bash expands braces first, <i>and then</i> expands jokers). And another quirk for the brace is that you need to have at least two items (need a comma) for this to be expanded by the shell; otherwise it's just literal. Examples:</p>
+
+<pre>
+a{}      # no wildcard, brace is literal
+a{a}     # no wildcard, brace is literal
+a{a,b}   # "has wildcard", brace is expanded into: aa ab
+a{a*,b?} # has wildcard, brace is expanded and then the jokers are expanded
+a\{a,b}  # no wildcard, brace escaped
+</pre>
+
+<p>Aside from the abovementioned wildcard, bash does other types of expansions/substitutions too, but these are not considered as wildcard. These include tilde expansion (e.g. <tt>~</tt> becomes C</home/ujang>), parameter and variable expansion (e.g. <tt>$0</tt> and <tt>$HOME</tt>), arithmetic expression (e.g. <tt>$[1+2]</tt>), history (<tt>!</tt>), and so on.<br />
+</p>
+                            
+                        </div><!-- .entry-body -->
+                        
+                        <div class="entry-meta-2 pkg">
+                            <ul>
+                                <li><a href="#comments">0 comments</a></li>
+                                <!-- <li><a href="http://blogs.perl.org/users/perlancar/2014/12/day-21-checking-if-a-string-contains-shell-wildcard-stringwildcardbash.html">0 votes</a></li> -->
+                            </ul>
+                        </div>
+                    </div><!-- #entry-6586 -->
+                    
+
+
+
+
+
+<div id="comments" class="comments">
+
+
+    
+    
+    
+
+    
+    
+    <div class="comments-open" id="comments-open">
+        <h2 class="comments-open-header">Leave a comment</h2>
+        <div class="comments-open-content">
+
+        
+            <div id="comment-greeting"></div>
+
+            <form method="post" action="http://blogs.perl.org/mt/mt-comments.fcgi" name="comments_form" id="comments-form" onsubmit="return mtCommentOnSubmit(this)">
+                <input type="hidden" name="static" value="1" />
+                <input type="hidden" name="entry_id" value="6586" />
+                <input type="hidden" name="__lang" value="en" />
+                <input type="hidden" name="parent_id" value="" id="comment-parent-id" />
+                <input type="hidden" name="armor" value="1" />
+                <input type="hidden" name="preview" value="" />
+                <input type="hidden" name="sid" value="" />
+                <div id="comments-open-data">
+                    <div id="comment-form-name">
+                        <label for="comment-author">Name</label>
+                        <input id="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-email">
+                        <label for="comment-email">Email Address</label>
+                        <input id="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-url">
+                        <label for="comment-url">URL</label>
+                        <input id="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-remember-me">
+                        <input type="checkbox" id="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
+                        <label for="comment-bake-cookie">Remember personal info?</label>
+                    </div>
+                </div>
+                <div id="comment-form-reply" style="display:none">
+                    <input type="checkbox" id="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
+                    <label for="comment-reply" id="comment-reply-label"></label>
+                </div>
+                <div id="comments-open-text">
+                    <label for="comment-text">Comments
+                    (You may use HTML tags for style)</label>
+                    <textarea id="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
+                </div>
+                <div id="comments-open-captcha"></div>
+                <div id="comments-open-footer">
+                    <input type="submit" accesskey="v" name="preview_button" id="comment-preview" value="Preview" onclick="this.form.preview.value='1';" />
+                    <input type="submit" accesskey="s" name="post" id="comment-submit" value="Submit" />
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+    <script type="text/javascript">
+    <!--
+    mtAttachEvent("load", mtEntryOnLoad);
+    mtAttachEvent("unload", mtEntryOnUnload);
+    //-->
+    </script>
+    
+
+
+</div>
+
+
+
+</div><!-- #content-main -->
+            
+            <div id="content-aux">
+            
+                
+                <div class="module-aux pkg" id="module-aux-about-author-3580">
+                <div class="module-inner">
+                    <h3>About perlancar</h3>
+                    <p><img class="authorpic" src="http://blogs.perl.org/mt/mt-static/images/default-userpic-50.jpg" alt="user-pic" />
+	            #perl #indonesia</p>
+                    <div class="more-link"><a href="http://blogs.perl.org/mt/mt-cp.fcgi?__mode=view&amp;id=3580">More info &raquo;</a></div>
+                </div>
+                </div><!-- #module-aux-about-author -->
+
+
+
+
+                
+            
+            
+            <div class="module-aux pkg" id="module-aux-search">
+                <div class="module-inner">
+                    
+                    
+                    <h3>Search this blog</h3>
+                    
+                    
+					
+                    <div id="search-form-aux">
+                        <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    
+                            <input type="hidden" name="IncludeBlogs" value="2481" />
+                    
+                            <input type="hidden" name="limit" value="20" />
+                            <label for="search">Search</label>
+                            <input id="local-search" class="query" name="search" value="" />
+                            <input class="submit" type="submit" value="Go" />
+                        </form>
+                    </div><!-- #search-form-aux -->
+                </div>
+                </div><!-- #module-aux-search -->
+                    
+
+            
+            
+                
+                
+                
+                
+            
+
+            </div><!-- #content-aux -->
+
+
+
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+
+        <div id="footer">
+        <div id="footer-inner" class="pkg">
+            <ul>
+                <li class="first"><a href="http://github.com/blogs-perl-org/blogs.perl.org/issues">Feedback welcome</a></li>
+                <li>Hosted by <a href="http://dave.org.uk">Dave Cross</a> of <a href="http://mag-sol.com/">Magnum Solutions</a> and <a href="http://aaroncrane.co.uk/">Aaron Crane</a> of <a href="http://cutbot.net/">Cutbot</a></li>
+            </ul>
+            <ul>
+                <li class="first">Free blog hosting for users of the <a href="http://perl.org">Perl Programming Language</a></li>
+            </ul> 
+
+            <div class="powered-by"><a href="http://www.movabletype.com/" target="_blank">Powered by Movable Type</a></div>
+        </div><!-- #footer-inner -->
+        </div><!-- #footer -->
+            
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+        
+    </div><!-- #container-inner -->
+    </div><!-- #container -->
+
+    
+
+</body>
+</html>
+
+
+
+
+

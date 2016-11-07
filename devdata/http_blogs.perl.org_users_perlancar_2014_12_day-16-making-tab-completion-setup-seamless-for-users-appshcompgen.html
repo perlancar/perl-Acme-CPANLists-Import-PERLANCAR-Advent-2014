@@ -1,0 +1,315 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" id="sixapart-standard">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Style-Type" content="text/css" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <title>Day 16: Making tab completion setup seamless for users (App::shcompgen) | perlancar [blogs.perl.org]</title>
+    <meta name="generator" content="Movable Type Pro 4.38" />
+    
+
+    
+    
+        
+        
+        
+        
+        
+        
+        
+        
+    <link href="http://blogs.perl.org/users/perlancar/styles/reset.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/users/perlancar/styles/base.css" rel="stylesheet" type="text/css" />
+    <link href="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.css" rel="stylesheet" type="text/css" />
+    <link rel="alternate" type="application/atom+xml" title="Entries" href="http://blogs.perl.org/users/perlancar/atom.xml" />
+
+    <link rel="start" href="http://blogs.perl.org/users/perlancar/" title="Home" />
+    <script type="text/javascript" src="http://blogs.perl.org/users/perlancar/mt.js"></script>
+    <script type="text/javascript" src="http://blogs.perl.org/mt/mt-static/plugins/GCPrettify/prettify.js"></script>
+    <script type="text/javascript">mtAttachEvent('load', prettyPrint);</script>
+    
+    
+
+
+    
+    <link rel="prev bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-15-words-on-cpan-appwordlist.html" title="Day 15: Words on CPAN (App::wordlist)" />
+    <link rel="next bookmark" href="http://blogs.perl.org/users/perlancar/2014/12/day-17-checking-process-existence-and-listing-processes-procfind.html" title="Day 17: Checking process existence and listing processes (Proc::Find)" />
+    
+    
+
+</head>
+<body class="">
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-56332-48']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+    <div id="container">
+    <div id="container-inner" class="pkg">
+        <div id="global-nav">
+        <div id="global-nav-inner">
+            <div id="global-nav-search">
+                <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    <input type="hidden" name="limit" value="20" />
+                    <label for="search">Search</label>
+                    <input id="global-search" class="query" name="search" value="Search blogs.perl.org" onfocus="cleanGlobalSearch();" />
+                    <input class="submit" type="submit" value="Go" />
+                </form>
+            </div><!-- #global-nav-search -->
+
+            <ul id="global-nav-links">
+                <li><a href="/">blogs.perl.org</a></li>
+                <li><a href="http://www.perl.org/">perl.org</a></li>
+                <li><a href="http://perlnews.org/">perlnews.org</a></li>
+                <li><a href="http://www.pm.org/">pm.org</a></li>
+		<li id="navbar-signin-widget">
+<span id="navbar-signin-widget-content" class="widget-content"></span>
+</li>
+<script type="text/javascript">
+/* <![CDATA[ */
+mtAttachEvent('usersignin', mtUpdateNavbarSignInWidget);
+mtUpdateNavbarSignInWidget();
+/* ]]> */
+</script>
+            </ul><!-- #global-nav-links -->
+        </div><!-- #global-nav-inner -->
+        </div><!-- #global-nav -->
+        
+
+
+        
+        <div id="header" class="pkg">
+        <div id="header-inner">
+            <h1 id="site-title"><a href="http://blogs.perl.org/users/perlancar/" accesskey="1">perlancar</a></h1>
+            <div id="site-description">A blog about the Perl programming language</div>
+        </div><!-- #header-inner -->
+        </div><!-- #header -->
+        
+        <div id="content">
+        <div id="content-inner" class="pkg">
+            <div id="content-main">
+            
+
+
+<div class="entry" id="entry-6565">
+                        <h2 class="entry-title">Day 16: Making tab completion setup seamless for users (App::shcompgen)</h2>
+                        
+                        <div class="entry-meta-1 pkg">
+                            <span class="byline">By <a href="http://blogs.perl.org/users/perlancar/" class="profile-link">perlancar</a></span>
+							<span class="dateline">on <span class="date" title="iso8601">December 16, 2014 12:00 AM</span></span>
+							
+						</div><!-- .entry-meta -->
+                        
+                        <div class="entry-body">
+                            <p><b>About the series</b>: perlancar's 2014 Advent Calendar: Introduction to a selection of 24 modules which I published in 2014. <a href="http://blogs.perl.org/users/perlancar/2014/12/perlancars-2014-advent-calendar.html">Table of contents</a>.</p>
+
+<p>I've created a couple of frameworks that make it easy for Perl developers to add tab completion feature to their scripts (and am planning to write another one). One is <a href="https://metacpan.org/pod/Perinci::CmdLine">Perinci::CmdLine</a>, which I recommend and use a lot more myself but requires you to immerse yourself with the concepts <a href="https://metacpan.org/pod/Rinci">Rinci metadata</a>, <a href="https://metacpan.org/pod/Riap">Riap</a> URLs, and all that. Another is <a href="https://metacpan.org/pod/Getopt::Long::Complete">Getopt::Long::Complete</a> which is more suitable to casual Perl programmers familiar with de-facto and builtin module for options parsing in Perl, <a href="https://metacpan.org/pod/Getopt::Long">Getopt::Long</a>. Getopt::Long::Complete allows you to use Getopt::Long interface; you just need to add a subroutine to tell how to complete option values and arguments.</p>
+
+<p>On the user side, setting up (activating) tab completion is not so straightforward, until recently. I've now come up with <a href="https://metacpan.org/pod/shcompgen">shcompgen</a>. This tool took a few iterations until it reaches the current form, and also a couple of hacks along the way (and a couple of minor quirks still remaining). But now the end result is that, after installing and setting up <tt>shcompgen</tt> (which involves just running <tt>shcompgen init</tt> and adding a single line to her <tt>~/.bashrc</tt>), user can just install your distribution and immediately, in the current shell, she will have tab completion already activated for your scripts. For example:</p>
+
+<pre>% cpanm -n App::fatten
+% fatten --in[tab][tab]
+--include    --include-dist    --include-file
+% fatten -t [tab][tab]
+fatpacker    prereqscanner   prereqscanner_lite    prereqscanner_lite_recurse    prereqscanner_recurse    require
+</pre>
+
+<p>Isn't that nice? If you install tens+ CLI scripts like me, it's a godsend because I don't have to mess with any 'complete' shell command or start a new shell to activate completion. It becomes active right then and there ready to be used.</p>
+
+<p>To accomplish this, there are several components involved. I'm going to talk only for bash at the moment, since that is currently the only supported shell by <tt>shcompgen</tt>, but support for other shells (fish and zsh) is along the way.</p>
+
+<p>First, of course you have to write your CLI script using Perinci::CmdLine or Getopt::Long::Complete. Support for other CLI framework can be added in the future, should there be any demand or pull request.</p>
+
+<p>Second, if you use <a href="https://metacpan.org/pod/Dist::Zilla">Dist::Zilla</a> to create your distribution, you'll want to add this plugin: <a href="https://metacpan.org/pod/Dist::Zilla::Plugin::GenShellCompletion">GenShellCompletion</a>. This plugin, admittedly quite hackish, will add a code to the generated <tt>Makefile.PL</tt> that will <i>then</i> add bits to the generated <tt>Makefile</tt> which will run <tt>shcompgen generate</tt> for your scripts and generate the shell completion scripts (in bash they will just be <tt>complete -C PROGNAME PROGNAME</tt> since Perinci::CmdLine- and Getopt::Long::Complete-based CLI scripts can tab-complete themselves.</p>
+
+<p>These shell completion scripts go to <tt>~/.config/bash/completions/</tt> (there is currently still no convention of where to put per-user completion scripts in bash, so I picked this). The script will be autoloaded by bash because we've installed a handler in <tt>complete -F -D</tt> to search and load shell completion scripts for unknown commands.</p>
+
+<p>So in the example above, when a user installs your dist (<tt>App::fatten</tt>), during <tt>make install</tt> after your script is installed to the final location, this command will be run: <tt>shcompgen generate --replace fatten</tt> which will then create a file <tt>~/.config/bash/completions/fatten</tt> containing this line <tt>complete -C fatten fatten</tt>.</p>
+
+<p>When a user type <tt>fatten --in</tt> and presses Tab, <tt>~/.config/bash/completions/fatten</tt> will be loaded by the shell and the shell will know how to complete this command.<br />
+</p>
+                            
+                        </div><!-- .entry-body -->
+                        
+                        <div class="entry-meta-2 pkg">
+                            <ul>
+                                <li><a href="#comments">0 comments</a></li>
+                                <!-- <li><a href="http://blogs.perl.org/users/perlancar/2014/12/day-16-making-tab-completion-setup-seamless-for-users-appshcompgen.html">0 votes</a></li> -->
+                            </ul>
+                        </div>
+                    </div><!-- #entry-6565 -->
+                    
+
+
+
+
+
+<div id="comments" class="comments">
+
+
+    
+    
+    
+
+    
+    
+    <div class="comments-open" id="comments-open">
+        <h2 class="comments-open-header">Leave a comment</h2>
+        <div class="comments-open-content">
+
+        
+            <div id="comment-greeting"></div>
+
+            <form method="post" action="http://blogs.perl.org/mt/mt-comments.fcgi" name="comments_form" id="comments-form" onsubmit="return mtCommentOnSubmit(this)">
+                <input type="hidden" name="static" value="1" />
+                <input type="hidden" name="entry_id" value="6565" />
+                <input type="hidden" name="__lang" value="en" />
+                <input type="hidden" name="parent_id" value="" id="comment-parent-id" />
+                <input type="hidden" name="armor" value="1" />
+                <input type="hidden" name="preview" value="" />
+                <input type="hidden" name="sid" value="" />
+                <div id="comments-open-data">
+                    <div id="comment-form-name">
+                        <label for="comment-author">Name</label>
+                        <input id="comment-author" name="author" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-email">
+                        <label for="comment-email">Email Address</label>
+                        <input id="comment-email" name="email" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-url">
+                        <label for="comment-url">URL</label>
+                        <input id="comment-url" name="url" size="30" value="" onfocus="mtCommentFormOnFocus()" />
+                    </div>
+                    <div id="comment-form-remember-me">
+                        <input type="checkbox" id="comment-bake-cookie" name="bakecookie" onclick="mtRememberMeOnClick(this)" value="1" accesskey="r" />
+                        <label for="comment-bake-cookie">Remember personal info?</label>
+                    </div>
+                </div>
+                <div id="comment-form-reply" style="display:none">
+                    <input type="checkbox" id="comment-reply" name="comment_reply" value="" onclick="mtSetCommentParentID()" />
+                    <label for="comment-reply" id="comment-reply-label"></label>
+                </div>
+                <div id="comments-open-text">
+                    <label for="comment-text">Comments
+                    (You may use HTML tags for style)</label>
+                    <textarea id="comment-text" name="text" rows="15" cols="50" onfocus="mtCommentFormOnFocus()"></textarea>
+                </div>
+                <div id="comments-open-captcha"></div>
+                <div id="comments-open-footer">
+                    <input type="submit" accesskey="v" name="preview_button" id="comment-preview" value="Preview" onclick="this.form.preview.value='1';" />
+                    <input type="submit" accesskey="s" name="post" id="comment-submit" value="Submit" />
+                </div>
+            </form>
+
+
+        </div>
+    </div>
+    <script type="text/javascript">
+    <!--
+    mtAttachEvent("load", mtEntryOnLoad);
+    mtAttachEvent("unload", mtEntryOnUnload);
+    //-->
+    </script>
+    
+
+
+</div>
+
+
+
+</div><!-- #content-main -->
+            
+            <div id="content-aux">
+            
+                
+                <div class="module-aux pkg" id="module-aux-about-author-3580">
+                <div class="module-inner">
+                    <h3>About perlancar</h3>
+                    <p><img class="authorpic" src="http://blogs.perl.org/mt/mt-static/images/default-userpic-50.jpg" alt="user-pic" />
+	            #perl #indonesia</p>
+                    <div class="more-link"><a href="http://blogs.perl.org/mt/mt-cp.fcgi?__mode=view&amp;id=3580">More info &raquo;</a></div>
+                </div>
+                </div><!-- #module-aux-about-author -->
+
+
+
+
+                
+            
+            
+            <div class="module-aux pkg" id="module-aux-search">
+                <div class="module-inner">
+                    
+                    
+                    <h3>Search this blog</h3>
+                    
+                    
+					
+                    <div id="search-form-aux">
+                        <form method="get" action="http://blogs.perl.org/mt/mt-search.fcgi">
+                    
+                            <input type="hidden" name="IncludeBlogs" value="2481" />
+                    
+                            <input type="hidden" name="limit" value="20" />
+                            <label for="search">Search</label>
+                            <input id="local-search" class="query" name="search" value="" />
+                            <input class="submit" type="submit" value="Go" />
+                        </form>
+                    </div><!-- #search-form-aux -->
+                </div>
+                </div><!-- #module-aux-search -->
+                    
+
+            
+            
+                
+                
+                
+                
+            
+
+            </div><!-- #content-aux -->
+
+
+
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+
+        <div id="footer">
+        <div id="footer-inner" class="pkg">
+            <ul>
+                <li class="first"><a href="http://github.com/blogs-perl-org/blogs.perl.org/issues">Feedback welcome</a></li>
+                <li>Hosted by <a href="http://dave.org.uk">Dave Cross</a> of <a href="http://mag-sol.com/">Magnum Solutions</a> and <a href="http://aaroncrane.co.uk/">Aaron Crane</a> of <a href="http://cutbot.net/">Cutbot</a></li>
+            </ul>
+            <ul>
+                <li class="first">Free blog hosting for users of the <a href="http://perl.org">Perl Programming Language</a></li>
+            </ul> 
+
+            <div class="powered-by"><a href="http://www.movabletype.com/" target="_blank">Powered by Movable Type</a></div>
+        </div><!-- #footer-inner -->
+        </div><!-- #footer -->
+            
+        </div><!-- #content-inner -->
+        </div><!-- #content -->
+        
+    </div><!-- #container-inner -->
+    </div><!-- #container -->
+
+    
+
+</body>
+</html>
+
+
+
+
+
